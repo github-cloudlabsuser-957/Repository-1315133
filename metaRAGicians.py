@@ -1,12 +1,17 @@
 import os
 import json
 from dotenv import load_dotenv
-
+from azure.storage.blob import BlobServiceClient
 # Add OpenAI import
 from openai import AzureOpenAI
 
 import streamlit as st
-st.title("MetaRAGicians")
+
+# Function to upload file to Azure Storage
+def upload_to_azure_storage(file,azure_storage_account_name,azure_storage_account_key,container_name):
+    blob_service_client = BlobServiceClient.from_connection_string(f"DefaultEndpointsProtocol=https;AccountName={azure_storage_account_name};AccountKey={azure_storage_account_key}")
+    blob_client = blob_service_client.get_blob_client(container=container_name, blob=file.name)
+    blob_client.upload_blob(file)
 
 def main():
 
@@ -22,7 +27,19 @@ def main():
         azure_search_endpoint = os.getenv("AZURE_SEARCH_ENDPOINT")
         azure_search_key = os.getenv("AZURE_SEARCH_KEY")
         azure_search_index = os.getenv("AZURE_SEARCH_INDEX")
+        azure_storage_account_name =os.getenv("AZURE_STORAGE_NAME")
+        azure_storage_account_key = os.getenv("AZURE_STORAGE_KEY")
+        container_name = os.getenv("AZURE_STORAGE_CONTAINER")
 
+        st.title("MetaRAGicians Bot")
+        uploaded_file = st.file_uploader("Upload files to database")
+
+        if uploaded_file is not None:
+            # Upload the file to Azure Storage on button click
+            if st.button("Upload to Azure Storage"):
+                upload_to_azure_storage(uploaded_file,azure_storage_account_name,azure_storage_account_key,container_name)
+                st.success("File uploaded to Azure Storage!")
+        st.markdown("<hr>", unsafe_allow_html=True)
         # Initialize the Azure OpenAI client
         client = AzureOpenAI(
             base_url=f"{azure_oai_endpoint}/openai/deployments/{azure_oai_deployment}/extensions",
@@ -60,10 +77,10 @@ def main():
             )
 
         with st.chat_message("assistant"):
-            with st.spinner('Retrieving...'):
+            with st.spinner('Processing...'):
                 response = client.chat.completions.create(
                     model = azure_oai_deployment,
-                    temperature = 0.5,
+                    temperature = 0,
                     max_tokens = 1000,
                     messages=[
                         {"role": m["role"], "content": m["content"]}
