@@ -1,4 +1,4 @@
 python-dotenv
 openai==1.13.3
-streamlit
+streamlit==1.32.2
 azure-storage-blob
