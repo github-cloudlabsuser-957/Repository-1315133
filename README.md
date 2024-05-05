@@ -36,7 +36,7 @@ streamlit run metaRAGicians.py
 ```
 
 2. Once the chatbot is running, open the link in a browser and you can interact with it using natural language commands. 
-
+   Eg:
 - "What is the whitepaper Huawei and orange about"
 - "What tools are mentioned to gather insights on  digital transformation ?"
 
